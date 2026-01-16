@@ -1,10 +1,5 @@
 {% set version = "4.3.2" %}
-{% set build = 4 %}
-
-# give conda package a higher build number
-{% if mpi_type == 'conda' %}
-{% set build = build + 100 %}
-{% endif %}
+{% set build = 104 %}
 
 package:
   # must not match any outputs for requirements to be handled correctly

@@ -25,14 +25,14 @@ libfabric:
 libhwloc:
 - 2.12.2
 mpi_type:
-- external
+- conda
 mpich:
 - '4'
 target_platform:
-- linux-aarch64
-ucx:
-- '1.20'
+- linux-ppc64le
 zip_keys:
 - - c_compiler_version
   - cxx_compiler_version
   - fortran_compiler_version
+- - mpi_type
+  - channel_targets

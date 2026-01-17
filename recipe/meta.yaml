@@ -1,10 +1,5 @@
 {% set version = "4.3.2" %}
-{% set build = 3 %}
-
-# give conda package a higher build number
-{% if mpi_type == 'conda' %}
-{% set build = build + 100 %}
-{% endif %}
+{% set build = 104 %}
 
 package:
   # must not match any outputs for requirements to be handled correctly
@@ -31,20 +26,6 @@ outputs:
         - {{ pin_subpackage('mpich', max_pin='x') }}
       {% else %}
       string: {{ mpi_type }}_h{{ PKG_HASH }}_{{ build }}
-      track_features:
-        # four total features is a hack for solver
-        # priority issues in https://github.com/conda-forge/mpich-feedstock/issues/95
-        # the rule is that the number of features here has to be greater than the sum
-        # of the number of features across all possible dependencies of the non-external
-        # packages. See https://github.com/conda-forge/mpich-feedstock/issues/95#issuecomment-3617935263
-        # some manual queries of the repodata indicated that as of late 2025, this sum was ~2.
-        # we are using four total here to have a buffer.
-        # if this number ever changes, all previous external builds need to be patched to
-        # match the same number. Otherwise, chaos. - MRB (beckermr)
-        - mpich_{{ mpi_type }}
-        - mpich_{{ mpi_type }}_1
-        - mpich_{{ mpi_type }}_2
-        - mpich_{{ mpi_type }}_3
       {% endif %}
     requirements:
       {% if mpi_type == 'conda' %}

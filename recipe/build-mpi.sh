@@ -1,6 +1,12 @@
 #!/bin/bash
 set -ex
 
+if [[ "$mpi_type" == 'external' ]]; then
+  exit 0
+fi
+
+export PYTHON="$BUILD_PREFIX/bin/python3"
+
 # configure balks if F90 is defined
 # with a fatal deprecation message pointing to FC
 unset F90 F77
@@ -34,14 +40,6 @@ if [[ "$target_platform" == osx-* ]]; then
   ccdir=$($CC -print-search-dirs | awk '/libraries: =/{print substr($2,2)}')
   cp ${fcdir}/include/ISO_Fortran_binding.h ${ccdir}/include
 fi
-
-# avoid recording flags in compilers
-# See Compiler Flags section of MPICH readme
-# MPICHLIB_LDFLAGS is removed in 4.2.x,
-# we backport PR 6932 which puts it back
-# https://github.com/pmodels/mpich/pull/6932
-# FIXME: remove autoreconf when we no longer need patch 6932
-autoreconf -i -f
 
 export MPICHLIB_CPPFLAGS=$CPPFLAGS
 unset CPPFLAGS

@@ -34,7 +34,7 @@ outputs:
             - ${{ compiler('fortran') }}
             - ${{ stdlib("c") }}
             - make
-            - python 3.12.*
+            - python 3.14.*
             - if: osx and arm64
               then:
                 - gnuconfig

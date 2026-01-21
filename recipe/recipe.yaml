@@ -1,0 +1,140 @@
+schema_version: 1
+
+context:
+  version: 4.3.2
+  build: 105
+  mpi_type: ${{ mpi_type | default('conda') }}
+
+recipe:
+  name: mpich
+  version: ${{ version }}
+
+source:
+  url: https://www.mpich.org/static/downloads/${{ version }}/mpich-${{ version }}.tar.gz
+  sha256: 47d774587a7156a53752218c811c852e70ac44db9c502dc3f399b4cb817e3818
+
+build:
+  number: ${{ build }}
+  skip: win
+
+outputs:
+  - package:
+      name: mpich
+    build:
+      script:
+        file: build-mpi
+        env:
+          mpi_type: ${{ mpi_type }}
+    requirements:
+      build:
+        - if: mpi_type != 'external'
+          then:
+            - ${{ compiler('c') }}
+            - ${{ compiler('cxx') }}
+            - ${{ compiler('fortran') }}
+            - ${{ stdlib("c") }}
+            - make
+            - python 3.14.*
+            - if: osx and arm64
+              then:
+                - gnuconfig
+      host:
+        - if: mpi_type != 'external'
+          then:
+            - libfabric-devel ${{ libfabric }}.*
+            - libhwloc
+            - if: linux and not ppc64le
+              then: ucx
+      run:
+        - mpi 1.0.* mpich
+      run_exports:
+        - if: mpi_type != 'external'
+          then:
+            - ${{ pin_subpackage('mpich', upper_bound='x', lower_bound='x.x') }}
+    tests:
+      - if: mpi_type != 'external'
+        then:
+          - script:
+              - test ! -f $PREFIX/doc/mpich
+              - test ! -f $PREFIX/share/man/man3/MPI_Barrier.3
+            files:
+              recipe:
+                - tests/helloworld.sh
+
+  - package:
+      name: mpich-mpicc
+    build:
+      skip: win or mpi_type == 'external'
+      script:
+        - "echo 'ok'"
+    requirements:
+      run:
+        - ${{ pin_subpackage('mpich', exact=True) }}
+        - ${{ compiler('c') }}
+    tests:
+      - script:
+          file: run_test
+          env:
+            target_platform: ${{ target_platform }}
+        files:
+          recipe:
+            - tests/helloworld.c
+  - package:
+      name: mpich-mpicxx
+    build:
+      skip: win or mpi_type == 'external'
+      script:
+        - "echo 'ok'"
+    requirements:
+      run:
+        - ${{ pin_subpackage('mpich', exact=True) }}
+        - ${{ compiler('cxx') }}
+    tests:
+      - script:
+          file: run_test
+          env:
+            target_platform: ${{ target_platform }}
+        files:
+          recipe:
+            - tests/helloworld.cxx
+  - package:
+      name: mpich-mpifort
+    build:
+      skip: win or mpi_type == 'external'
+      script:
+        - "echo 'ok'"
+    requirements:
+      run:
+        - ${{ pin_subpackage('mpich', exact=True) }}
+        - ${{ compiler('fortran') }}
+    tests:
+      - script:
+          file: run_test
+          env:
+            target_platform: ${{ target_platform }}
+        files:
+          recipe:
+            - tests/helloworld.f
+            - tests/helloworld.f90
+            - tests/helloworld.f08
+
+about:
+  license: LicenseRef-MPICH
+  license_file: COPYRIGHT
+  summary: A high performance widely portable implementation of the MPI standard.
+  description: |
+    MPICH is a high performance and widely portable implementation of the
+    Message Passing Interface (MPI) standard.
+  homepage: https://www.mpich.org/
+  repository: https://github.com/pmodels/mpich
+  documentation: https://www.mpich.org/documentation/guides
+
+extra:
+  recipe-maintainers:
+    - astrofrog
+    - bekozi
+    - dalcinl
+    - minrk
+    - msarahan
+    - ocefpaf
+    - j34ni
